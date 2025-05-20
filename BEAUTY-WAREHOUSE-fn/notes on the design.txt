@@ -1,0 +1,7 @@
+1.flex:align-items-center(align items on the cross axis)
+2.padding:space between the content of an element and its border
+3.margin:space between an element and it's parent's border or even other elements
+4.z-index property the z axis on cartesian plane (html coordinate system)
+##React router
+Is when Javascipt checks the url and say if it is /.. render this
+no reload of the page

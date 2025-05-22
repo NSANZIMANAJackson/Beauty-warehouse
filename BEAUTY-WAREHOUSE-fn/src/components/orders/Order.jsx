@@ -1,96 +1,139 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from '../../api/axios';
 import CreateOrder from './createOrder';
 import Success from '../notification/success';
 import Error from '../notification/error';
-import axios from 'axios';
-const token = localStorage.getItem('authorization')
-import { useNavigate } from 'react-router-dom';
+
 const Orders = () => {
-  const navigate = useNavigate()
   const [rows, setRows] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData] = useState({ product_id: '', customer_id: '', quantity: '' });
+  const [isError, setIsError] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [message, setMessage] = useState('');
   const [isNewOrder, setIsNewOrder] = useState(false);
-  const [isError, setIsError] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [message, setMessage] = useState('')
-  async function getOrders() {
-    try {
-      const { data } = await axios.get('http://localhost:3000/api/v1/orders', { headers: { 'authorization': token } });
-      setRows(data);
-    } catch (error) {
-      console.log(error)
-      const { response: { data: { msg } } } = error
-      setMessage(msg)
-      setIsError(true)
-      setIsSuccess(false)
-    }
-  }
+
   useEffect(() => {
     getOrders();
   }, []);
 
+  async function getOrders() {
+    try {
+      const { data: { rows } } = await axios.get('/orders');
+      console.log(rows);
+      setRows(rows);
+    } catch (error) {
+      console.log(error);
+      setMessage(error.response?.data?.msg || 'Error fetching orders');
+      setIsError(true);
+    }
+  }
+
   async function handleDelete(id) {
     try {
-
-      const { data } = await axios.delete(`http://localhost:3000/api/v1/orders/${id}`, { headers: { 'authorization': token } })
-      setMessage(data)
-      setIsError(false)
-      setIsSuccess(true)
-      setTimeout(() => {
-        navigate('/Dashboard')
-      }, 600)
-
+      const { data } = await axios.delete(`/orders/${id}`);
+      setMessage(data);
+      setIsSuccess(true);
+      setIsError(false);
+      getOrders();
     } catch (error) {
-      console.log("error occured");
+      setMessage(error.response?.data?.msg || 'Error deleting order');
+      setIsError(true);
+    }
+  }
 
-      console.log(error);
+  async function handleUpdate(id) {
+    try {
+      const { data } = await axios.put(`/orders/${id}`, editData);
+      setMessage(data);
+      setIsSuccess(true);
+      setIsError(false);
+      setEditingId(null);
+      getOrders();
+    } catch (error) {
+      setMessage(error.response?.data?.msg || 'Error updating order');
+      setIsError(true);
     }
   }
 
   return (
     <div>
-      <header className='flex flex-row justify-between'>
-        <h1 className='text-2xl font-semibold mb-2'>Orders made by customers:</h1>
-        <form action="" className='flex flex-row justify-start'>
-          <input type='search' placeholder='search order ...' className='p-1' />
-          <button type="submit"></button>
-        </form>
-      </header>
-      <hr />
+      <h1 className="text-2xl font-semibold mb-2">Orders List</h1>
       {isError && <Error msg={message} />}
       {isSuccess && <Success msg={message} />}
-      <section className='flex flex-col mt-6'>
-        {/* New Order */}
+
+      <section className="flex flex-col mt-6">
         <button
           type="button"
-          onClick={() => setIsNewOrder(true)}
-          className='text-left text-lg flex items-center border-l-10 border-[#f0f3f5] bg-[#173b3f] text-white rounded-md px-4 py-3 mb-2 w-1/5 cursor-pointer hover:bg-[#143337]'
+          onClick={() => setIsNewOrder(!isNewOrder)}
+          className="text-left text-lg flex items-center border-l-10 border-[#f0f3f5] bg-[#173b3f] text-white rounded-md px-4 py-3 mb-2 w-1/5 cursor-pointer hover:bg-[#143337]"
         >
-          Create New Order
+          {isNewOrder ? 'Hide Form' : 'Add Order'}
         </button>
+
         {isNewOrder && <CreateOrder />}
-        {/* Render Table */}
-        <table className='w-full border-collapse text-center'>
-          <thead className='text-lg'>
+
+        <table className="w-full text-center mt-4 border-collapse">
+          <thead className="text-lg">
             <tr>
               <th>#Order ID</th>
-              <th>Customer Name</th>
-              <th>Product Name</th>
-              <th>Order Date</th>
-              <th>Action</th>
+              <th>Product ID</th>
+              <th>Customer ID</th>
+              <th>Quantity</th>
+              <th>Actions</th>
             </tr>
           </thead>
-          <tbody className='text-lg'>
-            {rows.map((row, index) => (
-              <tr key={index} className='odd:bg-white'>
+          <tbody className="text-lg">
+            {rows.map((row) => (
+              <tr key={row.order_id} className="odd:bg-white">
                 <td>{row.order_id}</td>
-                <td>{row.first_name} {row.last_name}</td>
-                <td>{row.product_name}</td>
-                <td>{row.order_date}</td>
-                <td className='flex justify-evenly'>
-                  <button type='submit' className='cursor-pointer'>
-                    <span className="material-symbols-outlined text-green-600">edit</span>
-                  </button>
-                  <button type='submit' className='cursor-pointer' onClick={() => handleDelete(row.order_id)}>
+                <td>
+                  {editingId === row.order_id ? (
+                    <input
+                      name="product_id"
+                      value={editData.product_id}
+                      onChange={e => setEditData({ ...editData, product_id: e.target.value })}
+                    />
+                  ) : (
+                    row.product_id
+                  )}
+                </td>
+                <td>
+                  {editingId === row.order_id ? (
+                    <input
+                      name="customer_id"
+                      value={editData.customer_id}
+                      onChange={e => setEditData({ ...editData, customer_id: e.target.value })}
+                    />
+                  ) : (
+                    row.customer_id
+                  )}
+                </td>
+                <td>
+                  {editingId === row.order_id ? (
+                    <input
+                      name="quantity"
+                      value={editData.quantity}
+                      onChange={e => setEditData({ ...editData, quantity: e.target.value })}
+                    />
+                  ) : (
+                    row.quantity
+                  )}
+                </td>
+                <td className="flex justify-evenly">
+                  {editingId === row.order_id ? (
+                    <button onClick={() => handleUpdate(row.order_id)}>
+                      <span className="material-symbols-outlined text-green-600">save</span>
+                    </button>
+                  ) : (
+                    <button onClick={() => {
+                      setEditingId(row.order_id);
+                      setEditData({ product_id: row.product_id, customer_id: row.customer_id, quantity: row.quantity });
+                    }}>
+                      <span className="material-symbols-outlined text-green-600">edit</span>
+                    </button>
+                  )}
+                  <button onClick={() => handleDelete(row.order_id)}>
                     <span className="material-symbols-outlined text-red-600">delete</span>
                   </button>
                 </td>

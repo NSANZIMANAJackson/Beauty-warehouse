@@ -8,6 +8,7 @@ import router from "./routes/routes.js";
 import dbConnection from "./db/connection.js";
 import errorHandlingMiddleware from "./middleware/errorHandling.js";
 import authenticationMiddleware from "./middleware/auth.js";
+import notFound from "./middleware/notFound.js";
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -19,8 +20,9 @@ app.use(json());
 // Public Routes
 app.use("/api/v1/auth", authRoutes);
 //Protected Routes
-app.use("/api/v1", authenticationMiddleware,router);
-
+app.use("/api/v1", authenticationMiddleware, router);
+//not-found Route
+app.use(notFound);
 // Error Middleware (must be last)
 app.use(errorHandlingMiddleware);
 

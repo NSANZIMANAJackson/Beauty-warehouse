@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../../api/axios';
 import Error from '../notification/error';
 import Success from '../notification/success';
-import { useNavigate } from 'react-router-dom';
-//token
-const token = localStorage.getItem('authorization')
 const CreateOrder = () => {
-      const navigate = useNavigate()
       const [customers, setCustomers] = useState([]);
       const [products, setProducts] = useState([]);
       const [data, setData] = useState({
@@ -17,21 +13,20 @@ const CreateOrder = () => {
       const [isError, setIsError] = useState(false);
       const [isSuccess, setIsSuccess] = useState(false);
       const [message, setMessage] = useState('');
+      async function getData() {
+            try {
+                  const { data: { rows: customerRows } } = await axios.get('http://localhost:3000/api/v1/customers');
+                  setCustomers(customerRows);
 
-      useEffect(() => {
-            async function getData() {
-                  try {
-                        const { data: { rows: customerRows } } = await axios.get('http://localhost:3000/api/v1/customers', { headers: { 'authorization': token } });
-                        setCustomers(customerRows);
-
-                        const { data: { rows: productRows } } = await axios.get('http://localhost:3000/api/v1/products', { headers: { 'authorization': token } });
-                        setProducts(productRows);
-                  } catch (error) {
-                        setIsError(true)
-                        const { response: { data: { msg } } } = error;
-                        setMessage(msg)
-                  }
+                  const { data: { rows: productRows } } = await axios.get('http://localhost:3000/api/v1/products');
+                  setProducts(productRows);
+            } catch (error) {
+                  setIsError(true)
+                  const { response: { data: { msg } } } = error;
+                  setMessage(msg)
             }
+      }
+      useEffect(() => {
             getData();
       }, []);
 
@@ -41,9 +36,9 @@ const CreateOrder = () => {
 
       const handleSubmit = async (e) => {
             e.preventDefault();
-            
+
             try {
-                  const { data: { msg } } = await axios.post('http://localhost:3000/api/v1/orders', data, { headers: { 'authorization': token } });
+                  const { data: { msg } } = await axios.post('http://localhost:3000/api/v1/orders', data);
                   setIsSuccess(true);
                   setMessage(msg);
                   setData({
@@ -51,7 +46,6 @@ const CreateOrder = () => {
                         customer_id: '',
                         amount: '' // Corrected spelling here
                   });
-                  navigate('/Dashboard')
             } catch (error) {
                   setIsError(true);
                   const { response: { data: { msg } } } = error;

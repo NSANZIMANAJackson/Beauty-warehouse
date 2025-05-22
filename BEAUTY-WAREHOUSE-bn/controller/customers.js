@@ -2,8 +2,8 @@ import { db } from "../db/connection.js";
 import { createCustomAPIError } from "../errors/customAPIerror.js";
 const addCustomer = async (req, res, next) => {
   const { first_name, last_name, location, telephone } = req.body;
-  
-  if ((!first_name || !last_name || !location || !telephone)) {
+
+  if (!first_name || !last_name || !location || !telephone) {
     next(createCustomAPIError("Please provide all values", 400));
   }
   try {
@@ -16,11 +16,29 @@ const addCustomer = async (req, res, next) => {
     next(error);
   }
 };
-const updateCustomer = (req, res) => {
-  res.send("can update Customer");
+const updateCustomer = async (req, res, next) => {
+  const { id } = req.params;
+  const { first_name, last_name, location, telephone } = req.body;
+
+  try {
+    await db.query(
+      `UPDATE customers SET first_name=?,
+      last_name=?,location=?,telephone=? WHERE customer_id = ?`,
+      [first_name, last_name, location, telephone, id]
+    );
+    res.status(200).json({ msg: "Customer edited successfully" });
+  } catch (error) {
+    next(error);
+  }
 };
-const deleteCustomer = (req, res) => {
-  res.send("can delete Customer");
+const deleteCustomer = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    await db.query("DELETE FROM customers WHERE customer_id = ?", [id]);
+    res.status(200).json({ msg: "Customer deleted successfully" });
+  } catch (error) {
+    return next(error);
+  }
 };
 const viewCustomers = async (req, res, next) => {
   try {

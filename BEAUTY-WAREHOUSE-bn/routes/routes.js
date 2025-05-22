@@ -26,8 +26,8 @@ import {
 router.route("/products").post(addProduct).get(viewProducts);
 router.route("/products/:id").patch(updateProduct).delete(deleteProduct); // View single product by ID
 router.route("/customers").post(addCustomer).get(viewCustomers);
-router.route("/customers/:id").patch(viewCustomers).delete(deleteCustomer); // View single customer by ID
+router.route("/customers/:id").patch(updateCustomer).delete(deleteCustomer); // View single customer by ID
 router.route("/orders").post(addOrder).get(viewOrders);
-router.route("/orders/:id").patch(viewOrders).delete(deleteOrder); // View single order by ID
+router.route("/orders/:id").patch(updateOrder).delete(deleteOrder); // View single order by ID
 
 export default router;

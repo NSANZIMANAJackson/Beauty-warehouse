@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-const token = localStorage.getItem('authorization')
+import axios from '../../api/axios';
 import Success from '../notification/success';
 import Error from '../notification/error';
 const CreateCustomer = () => {
@@ -11,8 +10,8 @@ const CreateCustomer = () => {
             telephone: ''
       });
       const [isError, setIsError] = useState(false)
-            const [isSuccess, setIsSuccess] = useState(false)
-            const [message, setMessage] = useState('')
+      const [isSuccess, setIsSuccess] = useState(false)
+      const [message, setMessage] = useState('')
 
       const handleInputChange = (e) => {
             setData({ ...data, [e.target.name]: e.target.value });
@@ -21,7 +20,7 @@ const CreateCustomer = () => {
       const handleSubmit = async (e) => {
             e.preventDefault();
             try {
-                  const {data:{msg}} = await axios.post('http://localhost:3000/api/v1/customers', data, { headers: { 'authorization': token } });
+                  const { data: { msg } } = await axios.post('http://localhost:3000/api/v1/customers', data);
                   // Reset form after successful submission
                   setIsSuccess(true)
                   setMessage(msg)

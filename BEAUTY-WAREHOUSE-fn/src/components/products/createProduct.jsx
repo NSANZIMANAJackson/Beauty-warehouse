@@ -1,8 +1,7 @@
-import axios from 'axios';
+import axios from '../../api/axios';
 import React, { useState } from 'react';
 import Error from '../notification/error'
 import Success from '../notification/success';
-const token = localStorage.getItem('authorization')
 const CreateProduct = () => {
       const [data, setData] = useState({
             product_name: '',
@@ -20,7 +19,7 @@ const CreateProduct = () => {
             e.preventDefault()
             try {
 
-                  const { data: { msg } } = await axios.post('http://localhost:3000/api/v1/products', data, { headers: { 'authorization': token } })
+                  const { data: { msg } } = await axios.post('http://localhost:3000/api/v1/products', data)
                   setIsSuccess(true)
                   setMessage(msg)
             } catch (error) {
